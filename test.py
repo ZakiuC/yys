@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 10:59:14
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-04 17:55:43
+LastEditTime : 2024-01-05 09:18:59
 FilePath     : \yys\test.py
 Description  : 
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -16,6 +16,7 @@ import time
 import threading
 import queue
 import pytesseract
+import os
 
 from grabscreen import grab_window
 from loadModel import home_top_ui_jinbi, home_top_ui_gouyu, home_top_ui_tili
@@ -131,12 +132,7 @@ def imgAnalysis(img):
             cv2.putText(img, "money", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
             top_left = (top_left[0] + home_top_ui_jinbi.width, top_left[1])
             bottom_right = (bottom_right[0] + 50, bottom_right[1])
-            cv2.rectangle(img, top_left, bottom_right, (0, 0, 255), 1)
-
-            # 裁剪图像
             roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
-
-            # OCR
             text = pytesseract.image_to_string(roi, lang='chi_sim')
             myMoney = parse_chinese_number(text)
             print(f'moneyText: {text}, data: {myMoney}')
@@ -149,12 +145,7 @@ def imgAnalysis(img):
             cv2.putText(img, "gouyu", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
             top_left = (top_left[0] + home_top_ui_gouyu.width, top_left[1])
             bottom_right = (bottom_right[0] + 50, bottom_right[1])
-            cv2.rectangle(img, top_left, bottom_right, (0, 0, 255), 1)
-
-            # 裁剪图像
             roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
-
-            # OCR
             text = pytesseract.image_to_string(roi, lang='chi_sim')
             myGouyu = parse_chinese_number(text)
             print(f'gouyuText: {text}, data: {myGouyu}')
@@ -167,12 +158,7 @@ def imgAnalysis(img):
             cv2.putText(img, "tili", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
             top_left = (top_left[0] + home_top_ui_tili.width, top_left[1])
             bottom_right = (bottom_right[0] + 70, bottom_right[1])
-            cv2.rectangle(img, top_left, bottom_right, (0, 0, 255), 1)
-
-            # 裁剪图像
             roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
-
-            # OCR
             text = pytesseract.image_to_string(roi, lang='chi_sim')
             myTili = parse_chinese_number(text)
             print(f'tiliText: {text}, data: {myTili}')
@@ -215,7 +201,13 @@ if __name__ == "__main__":
     # 当前显示的图像索引
     current_index = 0
     # 截图保存路径
-    save_path = r"C:\Users\zakiu\Desktop\savePath\image.png"
+    # 获取当前文件的绝对路径
+    current_file_path = os.path.abspath(__file__)
+    # 获取当前文件所在目录的路径
+    current_dir = os.path.dirname(current_file_path)
+    # 构建到 static/images/ 的路径
+    path_to_images = os.path.join(current_dir, "static", "images")
+    save_path = path_to_images
     # 初始化帧率相关的变量
     fps = 0
     frame_time = time.time()
@@ -229,6 +221,7 @@ if __name__ == "__main__":
     fps_thread = threading.Thread(target=calculate_fps)
     fps_thread.start()
 
+    # 加载OCR核心
     pytesseract.pytesseract.tesseract_cmd = r'D:\Tools\Tesseract-OCR\tesseract.exe'
     while True:
         # 捕获屏幕图像

@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 10:59:14
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-05 09:18:59
+LastEditTime : 2024-01-08 13:59:27
 FilePath     : \yys\test.py
 Description  : 
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -17,9 +17,11 @@ import threading
 import queue
 import pytesseract
 import os
+from ctypes import windll
+import sys
 
 from grabscreen import grab_window
-from loadModel import home_top_ui_jinbi, home_top_ui_gouyu, home_top_ui_tili
+from loadModel import home_top_ui_jinbi, home_top_ui_gouyu, home_top_ui_tili, ready_button, avatar, key_down, key_up
 
 
 def create_error_image(width, height, message):
@@ -45,8 +47,6 @@ def create_error_image(width, height, message):
     # 将文本放置在图像中央
     cv2.putText(img, message, (text_x, text_y), font, font_scale, font_color, font_thickness)
     return img
-
-
 
 def stackImages(scale, imgArray):
     """
@@ -84,17 +84,22 @@ def stackImages(scale, imgArray):
 
     return ver
 
-
-
-
 def parse_chinese_number(text):
     try:
-        # 移除非数字和非中文单位的字符
-        num_str = ''.join(filter(lambda x: x.isdigit() or x in ['亿', '万', '点'], text))
+        # 移除非数字和非中文单位的字符（除了小数点）
+        num_str = ''.join(filter(lambda x: x.isdigit() or x in ['亿', '万', '.', '/'], text))
 
         # 处理可能的空字符串
         if not num_str:
             return 0
+
+        # 处理带有分隔符（如 14万/100）的情况
+        if '/' in num_str:
+            num_str = num_str.split('/')[0]
+
+        # 处理带有小数点的数字
+        if '.' in num_str:
+            num_str = num_str.replace('.', '.')
 
         # 转换中文单位
         if '亿' in num_str:
@@ -102,17 +107,17 @@ def parse_chinese_number(text):
         elif '万' in num_str:
             return int(float(num_str.replace('万', '')) * 1e4)
         else:
-            # 处理带有小数点的数字
-            if '点' in num_str:
-                num_str = num_str.replace('点', '.')
             return int(float(num_str))
     except ValueError:
         # 在转换过程中出现错误时返回0或者适当的错误处理
         print(f"Error parsing number from text: {text}")
         return 0
+
+
 myMoney = None
 myGouyu = None
 myTili = None
+click_flag = False
 
 def imgAnalysis(img):
     """
@@ -122,54 +127,63 @@ def imgAnalysis(img):
 
     img: 待分析的图像
     """
-    global myMoney, myGouyu, myTili
+    global click_flag
+    # global myMoney, myGouyu, myTili
 
-    if myMoney is None:
-        result = home_top_ui_jinbi.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "money", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            top_left = (top_left[0] + home_top_ui_jinbi.width, top_left[1])
-            bottom_right = (bottom_right[0] + 50, bottom_right[1])
-            roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
-            text = pytesseract.image_to_string(roi, lang='chi_sim')
-            myMoney = parse_chinese_number(text)
-            print(f'moneyText: {text}, data: {myMoney}')
+    # if myMoney is None or myMoney == 0:
+    #     result = home_top_ui_jinbi.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "money", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         top_left = (top_left[0] + home_top_ui_jinbi.width, top_left[1])
+    #         bottom_right = (bottom_right[0] + 50, bottom_right[1])
+    #         roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
+    #         text = pytesseract.image_to_string(roi, lang='chi_sim')
+    #         myMoney = parse_chinese_number(text)
+    #         print(f'moneyText: {text}, data: {myMoney}')
 
-    if myGouyu is None:
-        result = home_top_ui_gouyu.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "gouyu", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            top_left = (top_left[0] + home_top_ui_gouyu.width, top_left[1])
-            bottom_right = (bottom_right[0] + 50, bottom_right[1])
-            roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
-            text = pytesseract.image_to_string(roi, lang='chi_sim')
-            myGouyu = parse_chinese_number(text)
-            print(f'gouyuText: {text}, data: {myGouyu}')
+    # if myGouyu is None or myGouyu == 0:
+    #     result = home_top_ui_gouyu.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "gouyu", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         top_left = (top_left[0] + home_top_ui_gouyu.width, top_left[1])
+    #         bottom_right = (bottom_right[0] + 50, bottom_right[1])
+    #         roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
+    #         text = pytesseract.image_to_string(roi, lang='chi_sim')
+    #         myGouyu = parse_chinese_number(text)
+    #         print(f'gouyuText: {text}, data: {myGouyu}')
 
-    if myTili is None:
-        result = home_top_ui_tili.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "tili", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            top_left = (top_left[0] + home_top_ui_tili.width, top_left[1])
-            bottom_right = (bottom_right[0] + 70, bottom_right[1])
-            roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
-            text = pytesseract.image_to_string(roi, lang='chi_sim')
-            myTili = parse_chinese_number(text)
-            print(f'tiliText: {text}, data: {myTili}')
+    # if myTili is None or myTili == 0:
+    #     result = home_top_ui_tili.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "tili", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         top_left = (top_left[0] + home_top_ui_tili.width, top_left[1])
+    #         bottom_right = (bottom_right[0] + 80, bottom_right[1])
+    #         roi = img[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
+    #         text = pytesseract.image_to_string(roi, lang='chi_sim')
+    #         myTili = parse_chinese_number(text)
+    #         print(f'tiliText: {text}, data: {myTili}')
+    avatar.threshold = 0.94
+    result = avatar.match(img)
+    if result is not None:
+        top_left, bottom_right = result
+        cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+        cv2.putText(img, "avatar", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+        print(f"score: {avatar.score}, x: {avatar.pos_x}, y: {avatar.pos_y}")
+        if click_flag == False:
+            click_flag = True
+            avatar.click(handle, duration=0.03)
     
 
-
-
-
-
-
 def calculate_fps():
+    """
+    fps计算
+    """
     global fps_text, running, frame_timestamps
     last_frame_time = None
     while running:
@@ -187,11 +201,11 @@ def calculate_fps():
 
 
 
-
-
-
-
 if __name__ == "__main__":
+    if not windll.shell32.IsUserAnAdmin():
+        # 不是管理员就提权
+        windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+        sys.exit(0)  # 退出当前实例
     # 目标窗口标题
     window_title = "阴阳师-网易游戏"
     # 新窗口标题
@@ -223,6 +237,10 @@ if __name__ == "__main__":
 
     # 加载OCR核心
     pytesseract.pytesseract.tesseract_cmd = r'D:\Tools\Tesseract-OCR\tesseract.exe'
+
+
+    handle = windll.user32.FindWindowW(None, "阴阳师-网易游戏")
+
     while True:
         # 捕获屏幕图像
         imgOrigin = grab_window(window_title)
@@ -298,8 +316,10 @@ if __name__ == "__main__":
             current_index = (current_index + 1) % len(imgShow)  # 循环显示
         elif key == ord('j'):
             # 保存当前显示的图像
-            cv2.imwrite(save_path, imgShow[current_index])
+            cv2.imwrite(save_path + "/image.png", imgShow[current_index])
             print(f"Image saved at {save_path}")
+        elif key == ord('s'):
+            click_flag = False
         elif key == ord('q'):
             running = False
             print("Exiting...")

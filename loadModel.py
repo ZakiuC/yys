@@ -3,18 +3,19 @@
 Author       : ZakiuC
 Date         : 2024-01-04 14:00:59
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-08 13:33:20
+LastEditTime : 2024-01-09 16:46:29
 FilePath     : \yys\loadModel.py
-Description  : 
+Description  : 目标图片加载，用于模板匹配，附带键盘/鼠标模拟输入
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
 '''
 import cv2
 import os
 from ctypes import windll, byref
-from ctypes.wintypes import HWND, POINT
+from ctypes.wintypes import HWND, POINT, RECT
 import string
 import time
-import sys
+import random
+import numpy as np
 
 
 # 获取当前文件的绝对路径
@@ -23,6 +24,29 @@ current_file_path = os.path.abspath(__file__)
 current_dir = os.path.dirname(current_file_path)
 # 构建到 static/images/ 的路径
 path_to_images = os.path.join(current_dir, "static", "images")
+
+
+def map_to_original(click_pos_x, click_pos_y, origin_width, origin_height):
+    """
+    将点击位置映射到原始窗口
+    click_pos_x: 点击位置的横坐标
+    click_pos_y: 点击位置的纵坐标
+    origin_width: 原始窗口宽度
+    origin_height: 原始窗口高度
+    return 原始窗口中的点击位置
+    """
+    # 新窗口分辨率
+    new_width, new_height = 640, 361
+
+    # 计算宽度和高度的缩放比例
+    scale_x = origin_width / new_width
+    scale_y = origin_height / new_height
+
+    # 将点击位置映射到原始窗口
+    original_click_x = int(click_pos_x * scale_x)
+    original_click_y = int(click_pos_y * scale_y)
+
+    return original_click_x, original_click_y
 
 
 class TargetImage:
@@ -56,18 +80,57 @@ class TargetImage:
         else:
             return None
     
-    def click(self, handle: HWND, offset_x=0, offset_y=0, duration=0.03):
+    def match_all(self, main_image, method=cv2.TM_CCOEFF_NORMED, threshold=None):
+        """
+        在图像中查找所有匹配模板的位置
+        main_image: 待查找的图像
+        method: 匹配方法
+        threshold: 匹配分数阈值，仅返回高于此分数的匹配结果
+        return: 返回所有匹配结果的左上角和右下角坐标列表，如果未找到返回空列表
+        """
+        result = cv2.matchTemplate(main_image, self.image, method)
+        if threshold is None:
+            threshold = self.threshold  # 使用对象的阈值属性
+
+        # 获取所有匹配分数超过阈值的位置
+        locations = np.where(result >= threshold)
+        matches = []
+
+        for loc in zip(*locations[::-1]):  # *locations[::-1] 转换为x,y坐标
+            top_left = loc
+            bottom_right = (top_left[0] + self.width, top_left[1] + self.height)
+            matches.append((top_left, bottom_right))
+
+        return matches
+
+    def click(self, handle: HWND, offset_x=15, offset_y=15, duration=0.027, offset_duration=0.03, waitCD=0.7, offset_waitCD=0.3):
         """在指定窗口中点击模板图像的中心点
 
         Args:
             handle (HWND): 窗口句柄
-            offset_x (int, optional): 横向偏移量. 默认为0.
-            offset_y (int, optional): 纵向偏移量. 默认为0.
-            duration (float, optional): 按下和放开的时间间隔. 默认为0.03.
+            offset_x (int, optional): 横向偏移量. 默认为15.
+            offset_y (int, optional): 纵向偏移量. 默认为15.
+            duration (float, optional): 按下和放开的时间间隔. 默认为0.027.
+            offset_duration (float, optional): 时间间隔的随机偏移量. 默认为0.03.
+            waitCD (float, optional): 点击后等待时间. 默认为0.7.
+            offset_waitCD (float, optional): 等待时间的随机偏移量. 默认为0.3.
+            retrun (list): 返回点击位置的坐标
         """
-        left_down(handle, self.pos_x + offset_x, self.pos_y + offset_y)
-        time.sleep(duration)
-        left_up(handle, self.pos_x + offset_x, self.pos_y + offset_y)
+        rect = RECT()
+        windll.user32.GetWindowRect(handle, byref(rect))
+        original_width = rect.right - rect.left
+        original_height = rect.bottom - rect.top
+        click_pos_x = self.pos_x + random.randint(-offset_x, offset_x)
+        click_pos_y = self.pos_y + random.randint(-offset_y, offset_y)
+        # 映射到原始窗口坐标
+        original_click_x, original_click_y = map_to_original(click_pos_x, click_pos_y, original_width, original_height)
+        press_duration = duration + random.uniform(0.0, offset_duration)
+        wait_time = waitCD + random.uniform(0.0, offset_waitCD)
+        left_down(handle, original_click_x, original_click_y)
+        time.sleep(press_duration)
+        left_up(handle, original_click_x, original_click_y)
+        time.sleep(wait_time)
+        return [(click_pos_x, click_pos_y), (original_click_x, original_click_y)]
 
 
 
@@ -104,11 +167,52 @@ home_top_ui_gouyu = TargetImage("home_up_ui_magatama.png")
 home_top_ui_tili = TargetImage("home_up_ui_stamina.png")
 # 庭院中部町中图标
 home_machinaka = TargetImage("Machinaka.png")
-# 准备按钮
+# 庭院中部探索图标
+home_exploratory = TargetImage("home_exploratory.png")
+# 探索 - [妖]图标
+exploratory_goblin_tag = TargetImage("exploratory_goblin_tag.png")
+# 探索底部菜单 - 觉醒材料
+exploratory_bottom_menu_obj1 = TargetImage("exploratory_bottom_menu_obj1.png")
+# 探索底部菜单 - 御魂
+exploratory_bottom_menu_obj2 = TargetImage("exploratory_bottom_menu_obj2.png")
+# 探索底部菜单 - 结界突破
+exploratory_bottom_menu_obj3 = TargetImage("exploratory_bottom_menu_obj3.png")
+# 探索底部菜单 - 御灵
+exploratory_bottom_menu_obj4 = TargetImage("exploratory_bottom_menu_obj4.png")
+# 探索底部菜单 - 式神委派
+exploratory_bottom_menu_obj5 = TargetImage("exploratory_bottom_menu_obj5.png")
+# 探索底部菜单 - 秘闻副本
+exploratory_bottom_menu_obj6 = TargetImage("exploratory_bottom_menu_obj6.png")
+# 探索底部菜单 - 地域鬼王
+exploratory_bottom_menu_obj7 = TargetImage("exploratory_bottom_menu_obj7.png")
+# 探索底部菜单 - 平安奇谭
+exploratory_bottom_menu_obj8 = TargetImage("exploratory_bottom_menu_obj8.png")
+# 探索底部菜单 - 六道之门
+exploratory_bottom_menu_obj9 = TargetImage("exploratory_bottom_menu_obj9.png")
+# 探索底部菜单 - 契灵之境
+exploratory_bottom_menu_obj10 = TargetImage("exploratory_bottom_menu_obj10.png")
+# 结界突破标题
+Boundary_breakthrough_title = TargetImage("Boundary_breakthrough_title.png")
+# 结界突破 - 个人突破 - 防守记录图标
+Boundary_breakthrough_record_defense_tag = TargetImage("Boundary_breakthrough_record_defense_tag.png")
+# 结界突破 - 寮突破 - 突破记录图标
+Boundary_breakthrough_records_broken_tag = TargetImage("Boundary_breakthrough_records_broken_tag.png")
+# 结界突破 - 个人 - 选中
+Boundary_breakthrough_personal_selected = TargetImage("Boundary_breakthrough_personal_selected.png")
+# 结界突破 - 个人 - 未选中
+Boundary_breakthrough_personal_unselected = TargetImage("Boundary_breakthrough_personal_unselected.png")
+# 结界突破 - 寮 - 选中
+Boundary_breakthrough_lao_selected = TargetImage("Boundary_breakthrough_lao_selected.png")
+# 结界突破 - 寮 - 未选中
+Boundary_breakthrough_lao_unselected = TargetImage("Boundary_breakthrough_lao_unselected.png")
+# 结界突破 - 寮 - 突破失败标记
+Boundary_breakthrough_lao_failure_flag = TargetImage("Boundary_breakthrough_lao_failure_flag.png")
+# 道馆突破 - 准备按钮
 ready_button = TargetImage("ready.png")
 # 头像
 avatar = TargetImage("user_image.png")
-
+# 测试
+test = TargetImage("test.png")
 
 
 PostMessageW = windll.user32.PostMessageW
@@ -283,7 +387,7 @@ def scroll(handle: HWND, delta: int, x: int, y: int):
 
     Args:
         handle (HWND): 窗口句柄
-        delta (int): 为正向上滚动，为负向下滚动
+        delta (int): 为正向上滚动，为负向下滚动 
         x (int): 横坐标
         y (int): 纵坐标
     """
@@ -316,3 +420,35 @@ def scroll_down(handle: HWND, x: int, y: int):
         y (int): 纵坐标
     """
     scroll(handle, -WHEEL_DELTA, x, y)
+
+
+def click(handle: HWND, x, y, offset_x=15, offset_y=15, duration=0.027, offset_duration=0.03, waitCD=0.7, offset_waitCD=0.3):
+        """在指定窗口中点击模板图像的中心点
+
+        Args:
+            handle (HWND): 窗口句柄
+            x (int): 点击位置的横坐标
+            y (int): 点击位置的纵坐标
+            offset_x (int, optional): 横向偏移量. 默认为15.
+            offset_y (int, optional): 纵向偏移量. 默认为15.
+            duration (float, optional): 按下和放开的时间间隔. 默认为0.027.
+            offset_duration (float, optional): 时间间隔的随机偏移量. 默认为0.03.
+            waitCD (float, optional): 点击后等待时间. 默认为0.7.
+            offset_waitCD (float, optional): 等待时间的随机偏移量. 默认为0.3.
+            retrun (list): 返回点击位置的坐标
+        """
+        rect = RECT()
+        windll.user32.GetWindowRect(handle, byref(rect))
+        original_width = rect.right - rect.left
+        original_height = rect.bottom - rect.top
+        click_pos_x = x + random.randint(-offset_x, offset_x)
+        click_pos_y = y + random.randint(-offset_y, offset_y)
+        # 映射到原始窗口坐标
+        original_click_x, original_click_y = map_to_original(click_pos_x, click_pos_y, original_width, original_height)
+        press_duration = duration + random.uniform(0.0, offset_duration)
+        wait_time = waitCD + random.uniform(0.0, offset_waitCD)
+        left_down(handle, original_click_x, original_click_y)
+        time.sleep(press_duration)
+        left_up(handle, original_click_x, original_click_y)
+        time.sleep(wait_time)
+        return [(click_pos_x, click_pos_y), (original_click_x, original_click_y)]

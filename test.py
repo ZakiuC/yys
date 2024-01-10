@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 10:59:14
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-09 17:32:57
+LastEditTime : 2024-01-10 14:02:46
 FilePath     : \yys\test.py
 Description  : 测试脚本
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -21,7 +21,7 @@ from ctypes import windll
 import sys
 
 from grabscreen import grab_window
-from loadModel import test, home_top_ui_jinbi, home_top_ui_gouyu, home_top_ui_tili, home_exploratory, exploratory_goblin_tag, exploratory_bottom_menu_obj3, Boundary_breakthrough_title, Boundary_breakthrough_record_defense_tag, Boundary_breakthrough_records_broken_tag, Boundary_breakthrough_lao_unselected, Boundary_breakthrough_lao_failure_flag, ready_button, avatar, key_down, key_up, click
+from loadModel import test, home_top_ui_jinbi, home_top_ui_gouyu, home_top_ui_tili, battle_end_tag, lineup_locked, lineup_unlocked, activitie_start, home_exploratory, exploratory_goblin_tag, exploratory_bottom_menu_obj3, Boundary_breakthrough_title, Boundary_breakthrough_record_defense_tag, Boundary_breakthrough_records_broken_tag, Boundary_breakthrough_lao_unselected, Boundary_breakthrough_lao_failure_flag, Boundary_breakthrough_lao_info_attack, ready_button, avatar, key_down, key_up, click
 
 
 def create_error_image(width, height, message):
@@ -179,131 +179,192 @@ def imgAnalysis(img):
     #     # if click_flag == False:
     #     #     click_flag = True
     #     ready_button.click(handle, duration=0.03)
-    # 结界突破 - 寮突
-    if state == 0:
-        # 在庭院，找到探索按钮
-        result = home_exploratory.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "button[exploratory]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            print(f"click button[exploratory]")
-            home_exploratory.click(handle)
-        else:
-            result = exploratory_goblin_tag.match(img)
-            if result is not None:
-                top_left, bottom_right = result
-                cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-                cv2.putText(img, "tag[goblin]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                print(f"Leave the courtyard and come to the exploration scene.")
-                state = 1
+    # # 结界突破 - 寮突
+    # if state == 0:
+    #     # 在庭院，找到探索按钮
+    #     result = home_exploratory.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "button[exploratory]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         print(f"click button[exploratory]")
+    #         home_exploratory.click(handle)
+    #     else:
+    #         result = exploratory_goblin_tag.match(img)
+    #         if result is not None:
+    #             top_left, bottom_right = result
+    #             cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #             cv2.putText(img, "tag[goblin]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #             print(f"Leave the courtyard and come to the exploration scene.")
+    #             state = 1
 
-    if state == 1:
-        # 在探索场景，找到结界突破按钮
-        result = exploratory_bottom_menu_obj3.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "button[obj3]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            print(f"click button[obj3]")
-            click_pos = exploratory_bottom_menu_obj3.click(handle)
-            cv2.circle(img, click_pos[0], 5, (0, 0, 255), 1, shift=0)
-        else:
-            result = Boundary_breakthrough_title.match(img)
-            if result is not None:
-                top_left, bottom_right = result
-                cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-                cv2.putText(img, "title[Boundary_breakthrough]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                print(f"Leave the exploration scene and come to the boundary breakthrough scene.")
-                state = 2
+    # if state == 1:
+    #     # 在探索场景，找到结界突破按钮
+    #     result = exploratory_bottom_menu_obj3.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "button[obj3]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         print(f"click button[obj3]")
+    #         click_pos = exploratory_bottom_menu_obj3.click(handle)
+    #         cv2.circle(img, click_pos[0], 5, (0, 0, 255), 1, shift=0)
+    #     else:
+    #         result = Boundary_breakthrough_title.match(img)
+    #         if result is not None:
+    #             top_left, bottom_right = result
+    #             cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #             cv2.putText(img, "title[Boundary_breakthrough]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #             print(f"Leave the exploration scene and come to the boundary breakthrough scene.")
+    #             state = 2
 
-    if state == 2:
-        # 在结界突破场景，切换到寮突破
-        result = Boundary_breakthrough_record_defense_tag.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "icon[record_defense]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            print(f"Onto the knot-breaking-personal-breaking scenario.")
-            result = Boundary_breakthrough_lao_unselected.match(img)
-            if result is not None:
-                top_left, bottom_right = result
-                cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-                cv2.putText(img, "button[lao_unselected]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                print(f"click button[lao_unselected]")
-                Boundary_breakthrough_lao_unselected.click(handle)
-        result = Boundary_breakthrough_records_broken_tag.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "icon[records_broken]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            print(f"To the knot-breaking-squatter-breaking scene.")
-            state = 3
+    # if state == 2:
+    #     # 在结界突破场景，切换到寮突破
+    #     result = Boundary_breakthrough_record_defense_tag.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "icon[record_defense]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         print(f"Onto the knot-breaking-personal-breaking scenario.")
+    #         result = Boundary_breakthrough_lao_unselected.match(img)
+    #         if result is not None:
+    #             top_left, bottom_right = result
+    #             cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #             cv2.putText(img, "button[lao_unselected]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #             print(f"click button[lao_unselected]")
+    #             Boundary_breakthrough_lao_unselected.click(handle)
+    #     result = Boundary_breakthrough_records_broken_tag.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "icon[records_broken]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         print(f"To the knot-breaking-squatter-breaking scene.")
+    #         state = 3
                 
     
-    if state == 3:
-        # 定位特定区域
-        top_left = (205, 65)
-        bottom_right = (551, 331)
-        # 将图片转换到 HSV 颜色空间
-        imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        # 定义HSV颜色范围的上下限
-        lower = np.array([10, 32, 197])
-        upper = np.array([18, 51, 249])
-        # 创建蒙版
-        mask = cv2.inRange(imgHSV, lower, upper)
-        # 应用蒙版
-        imgResult = cv2.bitwise_and(img, img, mask=mask)
-        roi = imgResult[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
-        # 在ROI中找矩形
-        imgGray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        imgBlur = cv2.GaussianBlur(imgGray, (7,7), 1)
-        imgCanny = cv2.Canny(imgBlur, 50, 50)
-        _, thresh = cv2.threshold(imgCanny, 150, 255, cv2.THRESH_BINARY)
-        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        # 对轮廓进行排序，从左到右，从上到下
-        contours_sorted = sorted(contours, key=lambda ctr: (cv2.boundingRect(ctr)[1], cv2.boundingRect(ctr)[0]))
-        cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-        id = 0
-        # 计算失败标志
-        results = Boundary_breakthrough_lao_failure_flag.match_all(img)
-        for result in results:
-            rx, ry, rw, rh = result[0][0], result[0][1], result[1][0] - result[0][0], result[1][1] - result[0][1]
-            print("Result coordinates:", rx, ry, rw, rh)
-            flag_top_left, flag_bottom_right = result
-            cv2.rectangle(img, flag_top_left, flag_bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "flag[fail]", flag_top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
+    # if state == 3:
+    #     # 定位特定区域
+    #     top_left = (205, 65)
+    #     bottom_right = (551, 331)
+    #     # 将图片转换到 HSV 颜色空间
+    #     imgHSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    #     # 定义HSV颜色范围的上下限
+    #     lower = np.array([10, 32, 197])
+    #     upper = np.array([18, 51, 249])
+    #     # 创建蒙版
+    #     mask = cv2.inRange(imgHSV, lower, upper)
+    #     # 应用蒙版
+    #     imgResult = cv2.bitwise_and(img, img, mask=mask)
+    #     roi = imgResult[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]
+    #     # 在ROI中找矩形
+    #     imgGray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    #     imgBlur = cv2.GaussianBlur(imgGray, (7,7), 1)
+    #     imgCanny = cv2.Canny(imgBlur, 50, 50)
+    #     _, thresh = cv2.threshold(imgCanny, 150, 255, cv2.THRESH_BINARY)
+    #     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    #     # 对轮廓进行排序，从左到右，从上到下
+    #     contours_sorted = sorted(contours, key=lambda ctr: (cv2.boundingRect(ctr)[1], cv2.boundingRect(ctr)[0]))
+    #     cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #     id = 0
+    #     # 计算失败标志
+    #     results = Boundary_breakthrough_lao_failure_flag.match_all(img)
+    #     for result in results:
+    #         rx, ry, rw, rh = result[0][0], result[0][1], result[1][0] - result[0][0], result[1][1] - result[0][1]
+    #         print("Result coordinates:", rx, ry, rw, rh)
+    #         flag_top_left, flag_bottom_right = result
+    #         cv2.rectangle(img, flag_top_left, flag_bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "flag[fail]", flag_top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
 
-        click_pos_x = click_pos_y = 0
-        for contour in contours_sorted:
-            # 获取轮廓的边界框
-            x, y, w, h = cv2.boundingRect(contour)
-            # 计算面积
-            area = w * h
+    #     click_pos_x = click_pos_y = 0
+    #     for contour in contours_sorted:
+    #         # 获取轮廓的边界框
+    #         x, y, w, h = cv2.boundingRect(contour)
+    #         # 计算面积
+    #         area = w * h
 
-            overlap = False
-            # 只有当result不为None时才进行重叠检测
-            # 遍历每个匹配结果进行重叠检测
-            for rx, ry, rw, rh in [(res[0][0], res[0][1], res[1][0] - res[0][0], res[1][1] - res[0][1]) for res in results]:
-                if ((x + top_left[0]) < rx + rw and (x + top_left[0]) + w > rx and (y + top_left[1]) < ry + rh and (y + top_left[1]) + h > ry):
-                    overlap = True
-                    print("Overlap detected")
-                    break  # 一旦检测到重叠，就跳出内循环
+    #         overlap = False
+    #         # 只有当result不为None时才进行重叠检测
+    #         # 遍历每个匹配结果进行重叠检测
+    #         for rx, ry, rw, rh in [(res[0][0], res[0][1], res[1][0] - res[0][0], res[1][1] - res[0][1]) for res in results]:
+    #             if ((x + top_left[0]) < rx + rw and (x + top_left[0]) + w > rx and (y + top_left[1]) < ry + rh and (y + top_left[1]) + h > ry):
+    #                 overlap = True
+    #                 print("Overlap detected")
+    #                 break  # 一旦检测到重叠，就跳出内循环
 
-            if area > 9000 and area < 12000 and not overlap:
-                # 打印轮廓的坐标和面积
-                print(f"[{id}] coordinates and area:", x, y, w, h, area)
-                # 在原图上绘制矩形
-                cv2.rectangle(img, (top_left[0] + x, top_left[1] + y), (top_left[0] + x + w, top_left[1] + y + h), (0, 255, 0), 1)
-                cv2.putText(img, f"[{id}]", (top_left[0] + x, top_left[1] + y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
-                id += 1
-                click_pos_x = top_left[0] + x + w // 2
-                click_pos_y = top_left[1] + y + h // 2
-                break
-        if click_pos_x != 0 and click_pos_y != 0:
-            click(handle=handle, x=click_pos_x, y=click_pos_y)
-            print(f"Click the [{id}] button.")
-            state = 99
+    #         if area > 9000 and area < 12000 and not overlap:
+    #             # 打印轮廓的坐标和面积
+    #             print(f"[{id}] coordinates and area:", x, y, w, h, area)
+    #             # 在原图上绘制矩形
+    #             cv2.rectangle(img, (top_left[0] + x, top_left[1] + y), (top_left[0] + x + w, top_left[1] + y + h), (0, 255, 0), 1)
+    #             cv2.putText(img, f"[{id}]", (top_left[0] + x, top_left[1] + y), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
+    #             id += 1
+    #             click_pos_x = top_left[0] + x + w // 2
+    #             click_pos_y = top_left[1] + y + h // 2
+    #             break
+    #     if click_pos_x != 0 and click_pos_y != 0:
+    #         click(handle=handle, x=click_pos_x, y=click_pos_y)
+    #         print(f"Click the [{id}] button.")
+    #         state = 4
+    if state == 0:
+        locked_result = lineup_locked.match(img)
+        unlocked_result = lineup_unlocked.match(img)
+        if locked_result is not None and unlocked_result is None:
+            top_left, bottom_right = locked_result
+            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+            cv2.putText(img, "icon[locked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            state = 1
+        elif locked_result is None and unlocked_result is not None:
+            top_left, bottom_right = unlocked_result
+            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+            cv2.putText(img, "icon[unlocked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            lineup_unlocked.click(handle)
+        elif locked_result is not None and unlocked_result is not None:
+            if lineup_locked.score > lineup_unlocked.score:
+                top_left, bottom_right = locked_result
+                cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+                cv2.putText(img, "icon[locked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+                state = 1
+            else:
+                top_left, bottom_right = unlocked_result
+                cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+                cv2.putText(img, "icon[unlocked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+                lineup_unlocked.click(handle)
+    elif state == 1:
+        print("已锁定阵容")
+        result = activitie_start.match(img)
+        if result is not None:
+            top_left, bottom_right = result
+            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+            cv2.putText(img, "button[start]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            activitie_start.click(handle)
+            print("点击了开始按钮")
+        else:
+            print("已开始战斗")
+            state = 2
+    elif state == 2:
+        result = battle_end_tag.match(img)
+        if result is not None:
+            top_left, bottom_right = result
+            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+            cv2.putText(img, "tag[battle end]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            battle_end_tag.click(handle)
+            print("点击了战斗结束标签")
+            state = 3
+        else:
+            print("战斗中")
+    elif state == 3:
+        result = battle_end_tag.match(img)
+        if result is not None:
+            top_left, bottom_right = result
+            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+            cv2.putText(img, "tag[battle end]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            battle_end_tag.click(handle)
+            print("点击了战斗结束标签")
+        else:
+            print("战斗结束")
+            state = 0
+
+        
+
 
 
 def update_scene():
@@ -476,20 +537,20 @@ if __name__ == "__main__":
         key = cv2.waitKey(1) & 0xFF
 
         # 根据键盘输入更新当前显示的图像索引
-        if key == ord('a'):
+        if key == ord('a') or key == ord('A'):
             current_index = (current_index - 1) % len(imgShow)  # 循环显示
-        elif key == ord('d'):
+        elif key == ord('d') or key == ord('D'):
             current_index = (current_index + 1) % len(imgShow)  # 循环显示
-        elif key == ord('j'):
+        elif key == ord('j') or key == ord('J'):
             # 保存当前显示的图像
             cv2.imwrite(save_path + "/image.png", imgShow[current_index])
             print(f"Image saved at {save_path}")
-        elif key == ord('s'):
+        elif key == ord('s') or key == ord('S'):
             if state != 0:
                 state = 0
             else:
                 state = 99
-        elif key == ord('q'):
+        elif key == ord('q') or key == ord('Q'):
             running = False
             print("Exiting...")
             break

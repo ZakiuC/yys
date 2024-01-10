@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 14:00:59
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-09 16:46:29
+LastEditTime : 2024-01-10 13:58:17
 FilePath     : \yys\loadModel.py
 Description  : 目标图片加载，用于模板匹配，附带键盘/鼠标模拟输入
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -207,12 +207,22 @@ Boundary_breakthrough_lao_selected = TargetImage("Boundary_breakthrough_lao_sele
 Boundary_breakthrough_lao_unselected = TargetImage("Boundary_breakthrough_lao_unselected.png")
 # 结界突破 - 寮 - 突破失败标记
 Boundary_breakthrough_lao_failure_flag = TargetImage("Boundary_breakthrough_lao_failure_flag.png")
+# 结界突破 - 寮 - 结界进攻按钮
+Boundary_breakthrough_lao_info_attack = TargetImage("Boundary_breakthrough_lao_info_attack.png")
 # 道馆突破 - 准备按钮
 ready_button = TargetImage("ready.png")
 # 头像
 avatar = TargetImage("user_image.png")
 # 测试
 test = TargetImage("test.png")
+# 活动 - 挑战按钮
+activitie_start = TargetImage("activitie_start.png")
+# 阵容 - 已锁定
+lineup_locked = TargetImage("lineup_locked.png")
+# 阵容 - 未锁定
+lineup_unlocked = TargetImage("lineup_unlocked.png") 
+# 副本 - 结束标记
+battle_end_tag = TargetImage("battle_end_tag.png")
 
 
 PostMessageW = windll.user32.PostMessageW

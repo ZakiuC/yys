@@ -2,7 +2,7 @@ English | [Simplified Chinese](./README.md)
 # Projects
 > Yin-Yang Master Monitor Script 
 # Version
-> V1.0.2
+> V1.0.2 - For active brushing of 1800 bodies
 
 
 # Structure

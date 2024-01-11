@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 10:59:14
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-10 14:02:46
+LastEditTime : 2024-01-11 15:54:31
 FilePath     : \yys\test.py
 Description  : 测试脚本
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -21,7 +21,8 @@ from ctypes import windll
 import sys
 
 from grabscreen import grab_window
-from loadModel import test, home_top_ui_jinbi, home_top_ui_gouyu, home_top_ui_tili, battle_end_tag, lineup_locked, lineup_unlocked, activitie_start, home_exploratory, exploratory_goblin_tag, exploratory_bottom_menu_obj3, Boundary_breakthrough_title, Boundary_breakthrough_record_defense_tag, Boundary_breakthrough_records_broken_tag, Boundary_breakthrough_lao_unselected, Boundary_breakthrough_lao_failure_flag, Boundary_breakthrough_lao_info_attack, ready_button, avatar, key_down, key_up, click
+from loadModel import divine_spirit_start, not_enough_challenges, battle_end_tag, lineup_locked, lineup_unlocked, activitie_start, home_exploratory, exploratory_goblin_tag, exploratory_bottom_menu_obj3, Boundary_breakthrough_title, Boundary_breakthrough_record_defense_tag, Boundary_breakthrough_records_broken_tag, Boundary_breakthrough_lao_unselected, Boundary_breakthrough_lao_failure_flag, Boundary_breakthrough_lao_info_attack, ready_button, avatar, key_down, key_up, click
+from script import script, scene_prompt
 
 
 def create_error_image(width, height, message):
@@ -304,6 +305,14 @@ def imgAnalysis(img):
     #         click(handle=handle, x=click_pos_x, y=click_pos_y)
     #         print(f"Click the [{id}] button.")
     #         state = 4
+    result = not_enough_challenges.match(img)
+    if result is not None:
+        top_left, bottom_right = result
+        cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+        cv2.putText(img, "tag[not_enough_challenges]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+        print(f"Click the [not_enough_challenges] button.")
+        state = 100
+        print("挑战次数不足")
     if state == 0:
         locked_result = lineup_locked.match(img)
         unlocked_result = lineup_unlocked.match(img)
@@ -374,21 +383,10 @@ def update_scene():
     global state, scene_text
     while running:
         try:
-            # 根据state更新场景显示文本
-            if state == 0:
-                scene_text = "courtyard"
-            elif state == 1:
-                scene_text = "exploration"
-            elif state == 2:
-                scene_text = "boundary breakthrough"
-            elif state == 3:
-                scene_text = "boundary breakthrough - lao"
-            else:
-                scene_text = "unknown"
+            scene_text = scene_prompt(state)
             time.sleep(0.1)
         except:
             continue
-
 
 def calculate_fps():
     """
@@ -494,8 +492,11 @@ if __name__ == "__main__":
         
         imgShow = [imgResize, imgGray, imgBlur, imgCanny, imgContour, imgStack]
 
-        # 图像分析
-        imgAnalysis(imgResize)
+        # # 图像分析
+        # imgAnalysis(imgResize)
+
+        # 脚本
+        state = script(imgResize, handle, state)
 
         # 添加帧率信息
         cv2.putText(imgShow[current_index], fps_text, (5, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
@@ -506,7 +507,7 @@ if __name__ == "__main__":
         (text_width, text_height), baseline = cv2.getTextSize(scene_text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         # 计算文本的起始 x 坐标
         start_x = imgShow[current_index].shape[1] - text_width - right_margin
-        # 确保 start_x 不是负值
+        # 确保 start_x 不是负值846
         start_x = max(0, start_x)
         # 在图片上绘制文本
         cv2.putText(imgShow[current_index], scene_text, (start_x, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
@@ -546,11 +547,18 @@ if __name__ == "__main__":
             cv2.imwrite(save_path + "/image.png", imgShow[current_index])
             print(f"Image saved at {save_path}")
         elif key == ord('s') or key == ord('S'):
-            if state != 0:
-                state = 0
-            else:
+            if state != 99:
                 state = 99
+                print("Stop script.")
+            else:
+                state = 0
+                print("Start script.")
         elif key == ord('q') or key == ord('Q'):
+            running = False
+            print("Exiting...")
+            break
+            
+        if state == 100:
             running = False
             print("Exiting...")
             break

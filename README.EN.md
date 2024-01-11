@@ -2,7 +2,7 @@ English | [Simplified Chinese](./README.md)
 # Projects
 > Yin-Yang Master Monitor Script 
 # Version
-> V1.0.2 - For active brushing of 1800 bodies
+> V1.0.3
 
 
 # Structure
@@ -11,10 +11,19 @@ English | [Simplified Chinese](./README.md)
 > - [grabscreen.py](./grabscreen.py) - windows window content capture
 > - [loadModel.py](./loadModel.py) - Target image loading for template matching with keyboard/mouse analog inputs
 > - [test.py](./test.py) - test script
+> - [script.py](script.py) - scripts
 
 
 # Update log
-## Activity brush for 1800 bodies
+## V1.0.3 - January 11, 2024
+### Added
+> - Added [script.py](./script.py) to put the script flow and control in this file.
+> - Add [fight script](./script.py#L112-L135)
+> - Add [Scroll Script](./script.py#L179-L229)
+### Modify
+> - Moved event tower climbing script to [script.py](./script.py#L32-L109)
+
+## Activity brush for 1800 bodies - January 10, 2024
 > ### New
 > - [test.py](./test.py#L307-L364) added script for new event copy 1800 bodies, details:
 > Recognize the lineup lock icon in the event interface, click to lock if not locked, look for the [Challenge] button to click to start the fight after locking the lineup, and loop the first step after the fight is over. (The specific process can be changed by yourself)

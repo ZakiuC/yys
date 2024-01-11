@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 14:00:59
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-10 13:58:17
+LastEditTime : 2024-01-11 16:04:51
 FilePath     : \yys\loadModel.py
 Description  : 目标图片加载，用于模板匹配，附带键盘/鼠标模拟输入
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -223,6 +223,36 @@ lineup_locked = TargetImage("lineup_locked.png")
 lineup_unlocked = TargetImage("lineup_unlocked.png") 
 # 副本 - 结束标记
 battle_end_tag = TargetImage("battle_end_tag.png")
+# 副本 - 挑战次数不足
+not_enough_challenges = TargetImage("not_enough_challenges.png")
+# 副本 - 冒险干粮不足
+lacking_in_strength = TargetImage("lacking_in_strength.png")
+# 斗技 - 开始匹配
+battle_start = TargetImage("battle_start.png")
+# 斗技 - 准备
+battle_ready = TargetImage("battle_ready.png")
+# 斗技 - 胜利
+battle_victory = TargetImage("battle_victory.png")
+# 斗技 - 失败
+battle_defeat = TargetImage("battle_defeat.png")
+# 斗技 - 拔得头筹
+battle_mvp = TargetImage("battle_mvp.png")
+# 斗技 - BP手动
+battle_bp_no_auto = TargetImage("battle_bp_no_auto.png")
+# 战斗 - 手动
+battle_manual = TargetImage("battle_manual.png")
+# 战斗 - 自动
+battle_auto = TargetImage("battle_auto.png")
+# 御灵 - 阵容锁定
+divine_spirit_lineup_locked = TargetImage("divine_spirit_lineup_locked.png")
+# 御灵 - 阵容未锁定
+divine_spirit_lineup_unlocked = TargetImage("divine_spirit_lineup_unlocked.png")
+# 御灵 - 开始挑战
+divine_spirit_start = TargetImage("divine_spirit_start.png")
+# 绘卷 - 小绘卷
+scroll_small = TargetImage("scroll_small.png")
+# 绘卷 - 小绘卷数量
+scroll_small_info = TargetImage("scroll_small_info.png")
 
 
 PostMessageW = windll.user32.PostMessageW

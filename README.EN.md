@@ -16,11 +16,11 @@ English | [Simplified Chinese](./README.md)
 
 # Update log
 ## V1.0.3 - January 11, 2024
-### Added
+> ### Added
 > - Added [script.py](./script.py) to put the script flow and control in this file.
 > - Add [fight script](./script.py#L112-L135)
 > - Add [Scroll Script](./script.py#L179-L229)
-### Modify
+> ### Modify
 > - Moved event tower climbing script to [script.py](./script.py#L32-L109)
 
 ## Activity brush for 1800 bodies - January 10, 2024

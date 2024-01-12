@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 14:00:59
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-11 16:04:51
+LastEditTime : 2024-01-12 16:44:33
 FilePath     : \yys\loadModel.py
 Description  : 目标图片加载，用于模板匹配，附带键盘/鼠标模拟输入
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -239,6 +239,8 @@ battle_defeat = TargetImage("battle_defeat.png")
 battle_mvp = TargetImage("battle_mvp.png")
 # 斗技 - BP手动
 battle_bp_no_auto = TargetImage("battle_bp_no_auto.png")
+# 斗技 - 分数
+pvp_score = TargetImage("pvp_score.png")
 # 战斗 - 手动
 battle_manual = TargetImage("battle_manual.png")
 # 战斗 - 自动
@@ -253,6 +255,14 @@ divine_spirit_start = TargetImage("divine_spirit_start.png")
 scroll_small = TargetImage("scroll_small.png")
 # 绘卷 - 小绘卷数量
 scroll_small_info = TargetImage("scroll_small_info.png")
+# 悬赏封印 - 标记
+seal_quest_tag = TargetImage("seal_quest_tag.png")
+# 悬赏封印 - 勾玉
+seal_quest_soul_jades = TargetImage("seal_quest_soul_jades.png")
+# 悬赏封印 - 同意
+seal_quest_agree = TargetImage("seal_quest_agree.png")
+# 悬赏封印 - 拒绝
+seal_quest_refuse = TargetImage("seal_quest_refuse.png")
 
 
 PostMessageW = windll.user32.PostMessageW
@@ -475,7 +485,9 @@ def click(handle: HWND, x, y, offset_x=15, offset_y=15, duration=0.027, offset_d
             offset_duration (float, optional): 时间间隔的随机偏移量. 默认为0.03.
             waitCD (float, optional): 点击后等待时间. 默认为0.7.
             offset_waitCD (float, optional): 等待时间的随机偏移量. 默认为0.3.
-            retrun (list): 返回点击位置的坐标
+        
+        Returns:
+            list (list): 返回点击位置的坐标
         """
         rect = RECT()
         windll.user32.GetWindowRect(handle, byref(rect))

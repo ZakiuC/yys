@@ -3,7 +3,7 @@
 Author       : ZakiuC
 Date         : 2024-01-04 10:59:14
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-11 15:54:31
+LastEditTime : 2024-01-12 17:04:56
 FilePath     : \yys\test.py
 Description  : 测试脚本
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
@@ -22,7 +22,7 @@ import sys
 
 from grabscreen import grab_window
 from loadModel import divine_spirit_start, not_enough_challenges, battle_end_tag, lineup_locked, lineup_unlocked, activitie_start, home_exploratory, exploratory_goblin_tag, exploratory_bottom_menu_obj3, Boundary_breakthrough_title, Boundary_breakthrough_record_defense_tag, Boundary_breakthrough_records_broken_tag, Boundary_breakthrough_lao_unselected, Boundary_breakthrough_lao_failure_flag, Boundary_breakthrough_lao_info_attack, ready_button, avatar, key_down, key_up, click
-from script import script, scene_prompt
+from script import script, scene_prompt, event_monitor
 
 
 def create_error_image(width, height, message):
@@ -305,72 +305,72 @@ def imgAnalysis(img):
     #         click(handle=handle, x=click_pos_x, y=click_pos_y)
     #         print(f"Click the [{id}] button.")
     #         state = 4
-    result = not_enough_challenges.match(img)
-    if result is not None:
-        top_left, bottom_right = result
-        cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-        cv2.putText(img, "tag[not_enough_challenges]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-        print(f"Click the [not_enough_challenges] button.")
-        state = 100
-        print("挑战次数不足")
-    if state == 0:
-        locked_result = lineup_locked.match(img)
-        unlocked_result = lineup_unlocked.match(img)
-        if locked_result is not None and unlocked_result is None:
-            top_left, bottom_right = locked_result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "icon[locked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            state = 1
-        elif locked_result is None and unlocked_result is not None:
-            top_left, bottom_right = unlocked_result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "icon[unlocked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            lineup_unlocked.click(handle)
-        elif locked_result is not None and unlocked_result is not None:
-            if lineup_locked.score > lineup_unlocked.score:
-                top_left, bottom_right = locked_result
-                cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-                cv2.putText(img, "icon[locked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                state = 1
-            else:
-                top_left, bottom_right = unlocked_result
-                cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-                cv2.putText(img, "icon[unlocked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                lineup_unlocked.click(handle)
-    elif state == 1:
-        print("已锁定阵容")
-        result = activitie_start.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "button[start]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            activitie_start.click(handle)
-            print("点击了开始按钮")
-        else:
-            print("已开始战斗")
-            state = 2
-    elif state == 2:
-        result = battle_end_tag.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "tag[battle end]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            battle_end_tag.click(handle)
-            print("点击了战斗结束标签")
-            state = 3
-        else:
-            print("战斗中")
-    elif state == 3:
-        result = battle_end_tag.match(img)
-        if result is not None:
-            top_left, bottom_right = result
-            cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
-            cv2.putText(img, "tag[battle end]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-            battle_end_tag.click(handle)
-            print("点击了战斗结束标签")
-        else:
-            print("战斗结束")
-            state = 0
+    # result = not_enough_challenges.match(img)
+    # if result is not None:
+    #     top_left, bottom_right = result
+    #     cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #     cv2.putText(img, "tag[not_enough_challenges]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #     print(f"Click the [not_enough_challenges] button.")
+    #     state = 100
+    #     print("挑战次数不足")
+    # if state == 0:
+    #     locked_result = lineup_locked.match(img)
+    #     unlocked_result = lineup_unlocked.match(img)
+    #     if locked_result is not None and unlocked_result is None:
+    #         top_left, bottom_right = locked_result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "icon[locked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         state = 1
+    #     elif locked_result is None and unlocked_result is not None:
+    #         top_left, bottom_right = unlocked_result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "icon[unlocked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         lineup_unlocked.click(handle)
+    #     elif locked_result is not None and unlocked_result is not None:
+    #         if lineup_locked.score > lineup_unlocked.score:
+    #             top_left, bottom_right = locked_result
+    #             cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #             cv2.putText(img, "icon[locked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #             state = 1
+    #         else:
+    #             top_left, bottom_right = unlocked_result
+    #             cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #             cv2.putText(img, "icon[unlocked]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #             lineup_unlocked.click(handle)
+    # elif state == 1:
+    #     print("已锁定阵容")
+    #     result = activitie_start.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "button[start]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         activitie_start.click(handle)
+    #         print("点击了开始按钮")
+    #     else:
+    #         print("已开始战斗")
+    #         state = 2
+    # elif state == 2:
+    #     result = battle_end_tag.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "tag[battle end]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         battle_end_tag.click(handle)
+    #         print("点击了战斗结束标签")
+    #         state = 3
+    #     else:
+    #         print("战斗中")
+    # elif state == 3:
+    #     result = battle_end_tag.match(img)
+    #     if result is not None:
+    #         top_left, bottom_right = result
+    #         cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 1)
+    #         cv2.putText(img, "tag[battle end]", top_left, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+    #         battle_end_tag.click(handle)
+    #         print("点击了战斗结束标签")
+    #     else:
+    #         print("战斗结束")
+    #         state = 0
 
         
 
@@ -406,7 +406,6 @@ def calculate_fps():
             last_frame_time = current_frame_time
         except queue.Empty:
             continue
-
 
 
 if __name__ == "__main__":
@@ -495,6 +494,8 @@ if __name__ == "__main__":
         # # 图像分析
         # imgAnalysis(imgResize)
 
+        # 突发事件监控
+        event_monitor(imgResize, handle)
         # 脚本
         state = script(imgResize, handle, state)
 

@@ -3,8 +3,8 @@
 Author       : ZakiuC
 Date         : 2024-01-04 10:59:14
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-12 17:04:56
-FilePath     : \yys\test.py
+LastEditTime : 2024-02-18 12:24:51
+FilePath     : \test.py
 Description  : 测试脚本
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
 '''
@@ -449,7 +449,9 @@ if __name__ == "__main__":
     scene_thread.start()
 
     # 加载OCR核心
-    pytesseract.pytesseract.tesseract_cmd = r'D:\Tools\Tesseract-OCR\tesseract.exe'
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    tesseract_cmd_path = os.path.join(dir_path, 'Tesseract-OCR', 'tesseract.exe')
+    pytesseract.pytesseract.tesseract_cmd = tesseract_cmd_path
 
     # 获取窗口句柄
     handle = windll.user32.FindWindowW(None, "阴阳师-网易游戏")
@@ -531,7 +533,7 @@ if __name__ == "__main__":
 
         # 设置窗口透明度
         # 透明度范围是 0(完全透明) 到 255(完全不透明)
-        transparency = 75
+        transparency = 255
         win32gui.SetLayeredWindowAttributes(hwnd, 0, transparency, win32con.LWA_ALPHA)
 
 

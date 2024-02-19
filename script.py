@@ -3,8 +3,8 @@
 Author       : ZakiuC
 Date         : 2024-01-11 08:38:16
 LastEditors  : ZakiuC z2337070680@163.com
-LastEditTime : 2024-01-12 17:28:57
-FilePath     : \yys\script.py
+LastEditTime : 2024-02-16 19:47:24
+FilePath     : \script.py
 Description  : 
 Copyright (c) 2024 by ZakiuC z2337070680@163.com, All Rights Reserved. 
 '''
@@ -12,6 +12,10 @@ import cv2
 import re
 import numpy as np
 import pytesseract
+import appPush
+import json
+from datetime import datetime
+import os
 from loadModel import test, home_top_ui_jinbi, home_top_ui_gouyu, home_top_ui_tili, not_enough_challenges, battle_end_tag, lineup_locked, lineup_unlocked, \
     activitie_start, lacking_in_strength, home_exploratory, exploratory_goblin_tag, exploratory_bottom_menu_obj3, Boundary_breakthrough_title, \
     Boundary_breakthrough_record_defense_tag, Boundary_breakthrough_records_broken_tag, Boundary_breakthrough_lao_unselected, Boundary_breakthrough_lao_failure_flag, \
@@ -64,14 +68,14 @@ def event_monitor(img, handle):
 
 def script(img, handle, state):
     # result = script_1800(img, handle, state)
-    # result = script_wrestling(img, handle, state) # 斗技
-    result = divine_spirit_grinding_scrolls(img, handle, state)
+    result = script_wrestling(img, handle, state) # 斗技
+    # result = divine_spirit_grinding_scrolls(img, handle, state)
     return result
 
 def scene_prompt(state):
     # result = scene_1800(state)
-    # result = scene_wrestling(state)    # 斗技
-    result = scene_divine_spirit(state)
+    result = scene_wrestling(state)    # 斗技
+    # result = scene_divine_spirit(state)
     return result
 
 # 爬塔1800
@@ -157,17 +161,21 @@ def scene_1800(state):
 pvp_my_score = 0
 score_count = 0
 temp_score = None
-def extract_new_score(img_original, bottom_right):
+max_pvp_my_score = 0
+def extract_new_score(img_original, bottom_right, scale_factor=6):
     x, y = bottom_right
     x += 50  # 根据实际情况调整，以确保截取到分数区域
-    y -= 26
-    info_img = img_original[y:y + 28, x - 52:x]  # 调整裁剪范围以覆盖分数区域
+    y -= 23
+    info_img = img_original[y:y + 23, x - 56:x]  # 调整裁剪范围以覆盖分数区域
+
+    # 将图片等比放大,以提高识别准确率
+    info_img = cv2.resize(info_img, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
 
     # 将图片转换到 HSV 颜色空间
     imgHSV = cv2.cvtColor(info_img, cv2.COLOR_BGR2HSV)
     # 定义 HSV 颜色范围的上下限
-    lower = np.array([17, 41, 140])
-    upper = np.array([36, 59, 255])
+    lower = np.array([9, 71, 114])
+    upper = np.array([19, 97, 255])
     # 创建蒙版
     mask = cv2.inRange(imgHSV, lower, upper)
     # 应用蒙版
@@ -176,8 +184,9 @@ def extract_new_score(img_original, bottom_right):
     # cv2.imshow("info_img", info_img)
     # cv2.imshow("gray_info_img", gray_info_img)
     # 识别
-    text = pytesseract.image_to_string(gray_info_img, lang='eng')
+    text = pytesseract.image_to_string(gray_info_img, config='outputbase digits', lang='eng')
     new_score = re.findall(r'\d+', text)
+    # print(f'text:{text}, new_score: {new_score}')
     if new_score:
         new_score = int(new_score[0])
         # 如果识别出的分数与上一次的分数相差500以上，则认为识别错误(可能引起误判的bug)
@@ -190,7 +199,40 @@ def extract_new_score(img_original, bottom_right):
             return new_score
     else:
         return None
-    
+
+
+
+def update_scores_to_file(pvp_my_score, max_pvp_my_score, filename='pvp_scores.txt'):
+    """
+    将分数更新至本地文件并向app推送
+
+    Args:
+        pvp_my_score (int): pvp的分数
+        max_pvp_my_score (int): pvp的最高分数
+        filename (str): 文件名
+    """
+    with open(filename, 'a') as f:
+        now = datetime.now()  # 获取当前时间
+        timestamp = now.strftime("%Y-%m-%d %H:%M:%S")  # 格式化时间戳
+        f.write(f'当前分数: {pvp_my_score}\t历史最高分: {max_pvp_my_score} ---- {timestamp}\n')
+        # 获取当前文件夹下的.env文件中的SENDKEY
+        data = {}
+        with open(os.path.join(os.path.dirname(__file__), '.env'), 'r') as f:
+            for line in f:
+                key, value = line.strip().split('=')
+                data[key] = value
+        key = data['SENDKEY']
+        ret = appPush.sc_send(f'更新斗技分数: {pvp_my_score}/{max_pvp_my_score}',desp = f'当前分数: {pvp_my_score}\t历史最高分: {max_pvp_my_score} ---- {timestamp}', channel=98, key=key)
+        ret_dict = json.loads(ret)  # 将 ret 的内容解析为字典
+        # 检查 'error' 字段是否等于 "SUCCESS"
+        if ret_dict['data']['error'] != 'SUCCESS':
+            print(f"推送失败：{ret_dict['data']['error']}")
+        else:
+            print(f"推送成功")
+        print(f"分数已更新至文件: {pvp_my_score}/{max_pvp_my_score}")
+
+
+
 # 斗技
 def script_wrestling(img, handle, state):
     """
@@ -204,7 +246,7 @@ def script_wrestling(img, handle, state):
     Returns:
         state (int): 状态
     """
-    global pvp_my_score, score_count, temp_score
+    global pvp_my_score, score_count, temp_score, max_pvp_my_score
     initial_state = state  # 记录初始state
     result = [None] * 9
     battle_stages = [pvp_score, battle_start, battle_ready, battle_manual, battle_auto, battle_victory, battle_defeat, battle_mvp, battle_bp_no_auto]
@@ -217,6 +259,18 @@ def script_wrestling(img, handle, state):
         if score_count != 0:
             score_count = 0
             print("重置分数读取计数器")
+    # 如果max_pvp_my_score无值或者值为零，从文件中读取max_pvp_my_score
+    if not max_pvp_my_score:
+        if os.path.exists("pvp_scores.txt"):
+            with open("pvp_scores.txt", 'r') as f:
+                lines = f.readlines()
+                if lines:  # 检查是否有行
+                    last_line = lines[-1]  # 获取最后一行
+                    if '历史最高分' in last_line:
+                        max_pvp_my_score = int(last_line.split('\t')[1].split(':')[1].split(' ')[1])  # 再次按照 ' ' 分割，然后选择数字部分
+        else:
+            print("分数记录文件不存在")
+
     if 0 <= state <= 9:
         for i, stage in enumerate(battle_stages):
             result[i] = stage.match(img_original)
@@ -236,9 +290,13 @@ def script_wrestling(img, handle, state):
                             if score_count >= 15:  # 连续15次相同分数
                                 pvp_my_score = new_score
                                 # 不return，继续检测下一个场景
-                                if pvp_my_score >= 2099:
+                                if pvp_my_score > max_pvp_my_score:
+                                    max_pvp_my_score = pvp_my_score
+                                # 更新分数到文件
+                                update_scores_to_file(pvp_my_score, max_pvp_my_score)  
+                                if pvp_my_score >= 2590:
                                     state = 99
-                                    break
+                                    break       
                             else:
                                 score_count += 1
                                 state =  (i + 1)
@@ -288,27 +346,27 @@ def scene_wrestling(state):
     """
     # 根据state更新场景显示文本
     if state == 0:
-        scene_text = f"stop: {pvp_my_score}"
+        scene_text = f"stop[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 1:
-        scene_text = f"battle scene: {pvp_my_score}"
+        scene_text = f"battle scene[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 2:
-        scene_text = f"battle scene: {pvp_my_score}"
+        scene_text = f"battle scene[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 3:
-        scene_text = f"battle ready: {pvp_my_score}"
+        scene_text = f"battle ready[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 4:
-        scene_text = f"battles: {pvp_my_score}"
+        scene_text = f"battles[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 5:
-        scene_text = f"battles: {pvp_my_score}"
+        scene_text = f"battles[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 6:
-        scene_text = f"battle victory: {pvp_my_score}"
+        scene_text = f"battle victory[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 7:
-        scene_text = f"battle defeat: {pvp_my_score}"
+        scene_text = f"battle defeat[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 8:
-        scene_text = f"battle mvp: {pvp_my_score}"
+        scene_text = f"battle mvp[now:{pvp_my_score} max:{max_pvp_my_score}]"
     elif state == 9:
-        scene_text = f"bp: {pvp_my_score}"
+        scene_text = f"bp[now:{pvp_my_score} max:{max_pvp_my_score}]"
     else:
-        scene_text = f"unknown: {pvp_my_score}"
+        scene_text = f"unknown[now:{pvp_my_score} max:{max_pvp_my_score}]"
     return scene_text
 
 
